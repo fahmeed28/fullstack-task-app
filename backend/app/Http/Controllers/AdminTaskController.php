@@ -49,54 +49,6 @@ class AdminTaskController extends Controller
     }
 
     // Update
-
-//     public function update(Request $request, $id)
-// {
-//     // 1) Task dhoondo (user + category ke saath)
-//     $task = Task::with(['user', 'category'])->find($id);
-
-//     if (! $task) {
-//         return response()->json([
-//             'message' => 'Task not found'
-//         ], 404);
-//     }
-
-//     // 2) Validation (sab optional / nullable)
-//     $request->validate([
-//         'title'       => 'sometimes|required|string|max:255',
-//         'description' => 'sometimes|nullable|string',
-//         'status'      => 'sometimes|required|in:pending,completed',
-//         'category_id' => 'sometimes|required|exists:categories,id',
-//     ]);
-
-//     // 3) Jo field aayi hai sirf wohi update karo
-//     if ($request->has('title')) {
-//         $task->title = $request->title;
-//     }
-
-//     if ($request->has('description')) {
-//         $task->description = $request->description;
-//     }
-
-//     if ($request->has('status')) {
-//         $task->status = $request->status;
-//     }
-
-//     if ($request->has('category_id')) {
-//         $task->category_id = $request->category_id;
-//     }
-
-//     $task->save();
-
-//     // 4) Fresh data (relations ke saath) wapas bhej do
-//     $task->load(['user', 'category']);
-
-//     return response()->json([
-//         'message' => 'Task updated successfully by admin.',
-//         'task'    => $task,
-//     ]);
-// }
-
 public function update(Request $request, $id)
 {
     // 1) Task find
