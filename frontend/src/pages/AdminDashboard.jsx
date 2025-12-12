@@ -15,8 +15,10 @@ function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showCreateAdminModal, setShowCreateAdminModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [userFormData, setUserFormData] = useState({ name: '', email: '', is_admin: false });
+  const [createAdminFormData, setCreateAdminFormData] = useState({ name: '', email: '', password: '', is_admin: true });
   const [taskFormData, setTaskFormData] = useState({ title: '', description: '', status: 'pending', category_id: '' });
   const [categories, setCategories] = useState([]);
 
@@ -103,10 +105,26 @@ function AdminDashboard() {
       await api.updateAdminUser(selectedUser.id, userFormData);
       success('User updated successfully');
       setShowUserModal(false);
+      setSelectedUser(null);
+      setUserFormData({ name: '', email: '', is_admin: false });
       loadUsers();
       if (activeTab === 'dashboard') loadDashboardData();
     } catch (err) {
       showError(err.message || 'Failed to update user');
+    }
+  };
+
+  const handleCreateAdmin = async (e) => {
+    e.preventDefault();
+    try {
+      await api.createAdminUser(createAdminFormData);
+      success('Admin user created successfully');
+      setShowCreateAdminModal(false);
+      setCreateAdminFormData({ name: '', email: '', password: '', is_admin: true });
+      loadUsers();
+      if (activeTab === 'dashboard') loadDashboardData();
+    } catch (err) {
+      showError(err.message || 'Failed to create admin user');
     }
   };
 
@@ -119,6 +137,11 @@ function AdminDashboard() {
       category_id: task.category_id || '',
     });
     setShowTaskModal(true);
+  };
+
+  const handleCreateAdminClick = () => {
+    setCreateAdminFormData({ name: '', email: '', password: '', is_admin: true });
+    setShowCreateAdminModal(true);
   };
 
   const handleDeleteTask = async (id) => {
@@ -142,6 +165,8 @@ function AdminDashboard() {
       await api.updateAdminTask(selectedTask.id, taskFormData);
       success('Task updated successfully');
       setShowTaskModal(false);
+      setSelectedTask(null);
+      setTaskFormData({ title: '', description: '', status: 'pending', category_id: '' });
       loadTasks();
       if (activeTab === 'dashboard') loadDashboardData();
     } catch (err) {
@@ -237,6 +262,14 @@ function AdminDashboard() {
 
         {activeTab === 'users' && (
           <div className="admin-table-container">
+            <div className="table-header-actions">
+              <button
+                onClick={handleCreateAdminClick}
+                className="btn-primary btn-create"
+              >
+                ➕ Create New Admin
+              </button>
+            </div>
             <table className="admin-table">
               <thead>
                 <tr>
@@ -324,13 +357,83 @@ function AdminDashboard() {
         )}
       </div>
 
+      {/* Create Admin Modal */}
+      {showCreateAdminModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateAdminModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create New Admin User</h2>
+              <button onClick={() => setShowCreateAdminModal(false)} className="btn-close">
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleCreateAdmin}>
+              <div className="form-group">
+                <label>Name</label>
+                <input
+                  type="text"
+                  value={createAdminFormData.name}
+                  onChange={(e) => setCreateAdminFormData({ ...createAdminFormData, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={createAdminFormData.email}
+                  onChange={(e) => setCreateAdminFormData({ ...createAdminFormData, email: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  value={createAdminFormData.password}
+                  onChange={(e) => setCreateAdminFormData({ ...createAdminFormData, password: e.target.value })}
+                  required
+                  minLength={6}
+                />
+              </div>
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={createAdminFormData.is_admin}
+                    onChange={(e) => setCreateAdminFormData({ ...createAdminFormData, is_admin: e.target.checked })}
+                  />
+                  Admin User
+                </label>
+              </div>
+              <div className="modal-actions">
+                <button type="button" onClick={() => setShowCreateAdminModal(false)} className="btn-secondary">
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary">
+                  Create Admin
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* User Edit Modal */}
       {showUserModal && (
-        <div className="modal-overlay" onClick={() => setShowUserModal(false)}>
+        <div className="modal-overlay" onClick={() => {
+          setShowUserModal(false);
+          setSelectedUser(null);
+          setUserFormData({ name: '', email: '', is_admin: false });
+        }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Edit User</h2>
-              <button onClick={() => setShowUserModal(false)} className="btn-close">
+              <button onClick={() => {
+                setShowUserModal(false);
+                setSelectedUser(null);
+                setUserFormData({ name: '', email: '', is_admin: false });
+              }} className="btn-close">
                 ×
               </button>
             </div>
@@ -364,7 +467,11 @@ function AdminDashboard() {
                 </label>
               </div>
               <div className="modal-actions">
-                <button type="button" onClick={() => setShowUserModal(false)} className="btn-secondary">
+                <button type="button" onClick={() => {
+                  setShowUserModal(false);
+                  setSelectedUser(null);
+                  setUserFormData({ name: '', email: '', is_admin: false });
+                }} className="btn-secondary">
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary">
@@ -378,11 +485,19 @@ function AdminDashboard() {
 
       {/* Task Edit Modal */}
       {showTaskModal && (
-        <div className="modal-overlay" onClick={() => setShowTaskModal(false)}>
+        <div className="modal-overlay" onClick={() => {
+          setShowTaskModal(false);
+          setSelectedTask(null);
+          setTaskFormData({ title: '', description: '', status: 'pending', category_id: '' });
+        }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Edit Task</h2>
-              <button onClick={() => setShowTaskModal(false)} className="btn-close">
+              <button onClick={() => {
+                setShowTaskModal(false);
+                setSelectedTask(null);
+                setTaskFormData({ title: '', description: '', status: 'pending', category_id: '' });
+              }} className="btn-close">
                 ×
               </button>
             </div>
@@ -432,7 +547,11 @@ function AdminDashboard() {
                 </div>
               )}
               <div className="modal-actions">
-                <button type="button" onClick={() => setShowTaskModal(false)} className="btn-secondary">
+                <button type="button" onClick={() => {
+                  setShowTaskModal(false);
+                  setSelectedTask(null);
+                  setTaskFormData({ title: '', description: '', status: 'pending', category_id: '' });
+                }} className="btn-secondary">
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary">

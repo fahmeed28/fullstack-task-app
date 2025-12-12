@@ -9,12 +9,8 @@ class IsAdmin
 {
     public function handle(Request $request, Closure $next)
     {
-        $user = $request->user();   // current login user (token se)
-
-        if (! $user || ! $user->is_admin) {
-            return response()->json([
-                'message' => 'Access denied. Admin only.'
-            ], 403);
+        if (! $request->user() || $request->user()->is_admin != 1) {
+            return response()->json(['message' => 'Admin access only'], 403);
         }
 
         return $next($request);

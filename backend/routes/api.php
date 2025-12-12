@@ -12,10 +12,11 @@ use App\Http\Controllers\AdminDashboardController;
 // PUBLIC ROUTES
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout']);
 
 // PROTECTED ROUTES (token required)
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::post('/categories', [CategoryController::class, 'store']);
     
@@ -36,9 +37,11 @@ Route::middleware(['auth:sanctum', 'is_admin'])
 
         // USERS
         Route::get('/users', [AdminUserController::class, 'index']);
+        Route::post('/users', [AdminUserController::class, 'store']);
         Route::get('/users/{id}', [AdminUserController::class, 'show']);
         Route::put('/users/{id}', [AdminUserController::class, 'update']);
-         Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
+        Route::put('/users/{id}/admin', [AdminUserController::class, 'setAdmin']);
+        Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
 
         // TASKS
         Route::get('/tasks/{id}', [AdminTaskController::class, 'show']);  

@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Tasks from './pages/Tasks';
 import AdminDashboard from './pages/AdminDashboard';
+import ApiTestPanel from './pages/ApiTestPanel';
 import './App.css';
 
 function AppContent() {
@@ -41,6 +42,9 @@ function AppContent() {
             </AdminProtectedRoute>
           }
         />
+        {import.meta.env.DEV && (
+          <Route path="/api-test" element={<ApiTestPanel />} />
+        )}
         <Route path="/" element={<Navigate to="/tasks" replace />} />
       </Routes>
       <ToastContainer toasts={toasts} removeToast={removeToast} />

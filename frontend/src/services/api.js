@@ -235,6 +235,21 @@ export const api = {
     return response.json();
   },
 
+  async createAdminUser(userData) {
+    const response = await fetch(`${API_BASE_URL}/admin/users`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(userData),
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to create user');
+    }
+    
+    return response.json();
+  },
+
   async getAdminUser(id) {
     const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
       method: 'GET',

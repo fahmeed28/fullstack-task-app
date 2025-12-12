@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Http\Request;
 class AdminUserController extends Controller
@@ -12,6 +13,32 @@ class AdminUserController extends Controller
         return response()->json(
             User::select('id', 'name', 'email', 'is_admin')->get()
         );
+    }
+
+    // CREATE NEW ADMIN USER
+    public function store(Request $request)
+    {
+        // Validation
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6',
+            'is_admin' => 'required|boolean',
+        ]);
+
+        // Create user with hashed password
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'is_admin' => $request->boolean('is_admin'),
+        ]);
+
+        // Return response without password
+        return response()->json([
+            'message' => 'User created successfully by admin.',
+            'user' => $user->only(['id', 'name', 'email', 'is_admin']),
+        ], 201);
     }
 
     // SINGLE USER + USKE TASKS
@@ -95,5 +122,33 @@ public function update(Request $request, $id)
     ]);
 }
 
+
+// New feature added
+
+public function setAdmin(Request $request, $id)
+{
+    $request->validate([
+        'is_admin' => 'required|boolean',
+    ]);
+
+    $user = User::find($id);
+
+    if (! $user) {
+        return response()->json(['message' => 'User not found'], 404);
+    }
+
+    // safety: logged-in admin apna role change na kare
+    if ($request->user()->id == $user->id) {
+        return response()->json(['message' => 'You cannot change your own admin role'], 403);
+    }
+
+    $user->is_admin = $request->boolean('is_admin');
+    $user->save();
+
+    return response()->json([
+        'message' => 'User role updated successfully',
+        'user' => $user->only(['id', 'name', 'email', 'is_admin']),
+    ]);
+}
 
 }
